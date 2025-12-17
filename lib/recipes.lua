@@ -89,137 +89,99 @@ recipes.ALL = {
     },
 }
 
--- Check if a recipe can be crafted with current chest contents
-local function canCraftRecipe(recipe, contents)
-    -- Check top slot requirement
+-- Recipe priority order (print first, then assemble)
+recipes.PRIORITY = {
+    "print_silicon",
+    "print_logic",
+    "print_calculation",
+    "print_engineering",
+    "assemble_logic",
+    "assemble_calculation",
+    "assemble_engineering",
+}
+
+-- Check how many of a recipe can be made with current contents
+local function countCraftable(recipe, contents)
+    local count = 999999  -- Start high, find minimum
+
+    -- Check top slot
     if recipe.top and recipe.top.item then
-        if not contents[recipe.top.item] or contents[recipe.top.item] < 1 then
-            return false
+        local have = contents[recipe.top.item] or 0
+        if recipe.top.consume then
+            count = math.min(count, have)
+        elseif have < 1 then
+            return 0  -- Need at least 1 press
         end
     end
 
-    -- Check middle slot requirement
+    -- Check middle slot
     if recipe.middle and recipe.middle.item then
-        if not contents[recipe.middle.item] or contents[recipe.middle.item] < 1 then
-            return false
+        local have = contents[recipe.middle.item] or 0
+        if recipe.middle.consume then
+            count = math.min(count, have)
+        elseif have < 1 then
+            return 0
         end
     end
 
-    -- Check bottom slot requirement
+    -- Check bottom slot
     if recipe.bottom and recipe.bottom.item then
-        if not contents[recipe.bottom.item] or contents[recipe.bottom.item] < 1 then
-            return false
+        local have = contents[recipe.bottom.item] or 0
+        if recipe.bottom.consume then
+            count = math.min(count, have)
+        elseif have < 1 then
+            return 0
         end
     end
 
-    return true
+    if count == 999999 then count = 0 end
+    return count
 end
 
--- Get list of recipes that can be crafted immediately
-function recipes.canCraft(chestContents)
-    local craftable = {}
-
-    for name, recipe in pairs(recipes.ALL) do
-        if canCraftRecipe(recipe, chestContents) then
-            table.insert(craftable, recipe)
-            log.debug("recipes", "Can craft: " .. name)
-        end
-    end
-
-    return craftable
-end
-
--- Plan crafting jobs using bottom-up approach
+-- Plan crafting jobs based on what's actually in chest
 function recipes.planCrafts(chestContents)
     local jobs = {}
     local contents = {}
 
-    -- Copy contents for simulation
+    -- Copy contents for tracking
     for k, v in pairs(chestContents) do
         contents[k] = v
     end
 
-    -- Helper to get count
-    local function getCount(item)
-        return contents[item] or 0
-    end
-
-    -- Helper to consume from simulation
+    -- Helper to consume from tracking
     local function consume(item, count)
         contents[item] = (contents[item] or 0) - count
         if contents[item] < 0 then contents[item] = 0 end
     end
 
-    -- Helper to add to simulation
-    local function produce(item, count)
-        contents[item] = (contents[item] or 0) + count
-    end
+    -- Plan jobs in priority order
+    for _, recipeName in ipairs(recipes.PRIORITY) do
+        local recipe = recipes.ALL[recipeName]
+        local canMake = countCraftable(recipe, contents)
 
-    -- Phase 1: Queue print jobs for silicon (needed for all assembly)
-    local siliconCount = getCount(recipes.ITEMS.SILICON)
-    local siliconPressAvailable = getCount(recipes.PRESSES.SILICON) > 0
-
-    if siliconPressAvailable and siliconCount > 0 then
-        for i = 1, siliconCount do
+        for i = 1, canMake do
             table.insert(jobs, {
-                recipe = recipes.ALL.print_silicon,
-                type = "print_silicon",
+                recipe = recipe,
+                type = recipeName,
             })
-            consume(recipes.ITEMS.SILICON, 1)
-            produce(recipes.ITEMS.PRINTED_SILICON, 1)
-        end
-    end
 
-    -- Phase 2: Queue print jobs for each processor type
-    local printRecipes = {
-        { recipe = recipes.ALL.print_logic, material = recipes.ITEMS.GOLD, press = recipes.PRESSES.LOGIC, output = recipes.ITEMS.PRINTED_LOGIC },
-        { recipe = recipes.ALL.print_calculation, material = recipes.ITEMS.CERTUS, press = recipes.PRESSES.CALCULATION, output = recipes.ITEMS.PRINTED_CALCULATION },
-        { recipe = recipes.ALL.print_engineering, material = recipes.ITEMS.DIAMOND, press = recipes.PRESSES.ENGINEERING, output = recipes.ITEMS.PRINTED_ENGINEERING },
-    }
-
-    for _, p in ipairs(printRecipes) do
-        local materialCount = getCount(p.material)
-        local pressAvailable = getCount(p.press) > 0
-
-        if pressAvailable and materialCount > 0 then
-            for i = 1, materialCount do
-                table.insert(jobs, {
-                    recipe = p.recipe,
-                    type = p.recipe.type,
-                })
-                consume(p.material, 1)
-                produce(p.output, 1)
+            -- Consume materials from tracking
+            if recipe.top and recipe.top.consume then
+                consume(recipe.top.item, 1)
+            end
+            if recipe.middle and recipe.middle.consume then
+                consume(recipe.middle.item, 1)
+            end
+            if recipe.bottom and recipe.bottom.consume then
+                consume(recipe.bottom.item, 1)
             end
         end
     end
 
-    -- Phase 3: Queue assembly jobs
-    local assemblyRecipes = {
-        { recipe = recipes.ALL.assemble_logic, printed = recipes.ITEMS.PRINTED_LOGIC },
-        { recipe = recipes.ALL.assemble_calculation, printed = recipes.ITEMS.PRINTED_CALCULATION },
-        { recipe = recipes.ALL.assemble_engineering, printed = recipes.ITEMS.PRINTED_ENGINEERING },
-    }
-
-    for _, a in ipairs(assemblyRecipes) do
-        local printedCount = getCount(a.printed)
-        local redstoneCount = getCount(recipes.ITEMS.REDSTONE)
-        local siliconPrintedCount = getCount(recipes.ITEMS.PRINTED_SILICON)
-
-        -- Can assemble min(printed, redstone, printedSilicon)
-        local canAssemble = math.min(printedCount, redstoneCount, siliconPrintedCount)
-
-        for i = 1, canAssemble do
-            table.insert(jobs, {
-                recipe = a.recipe,
-                type = a.recipe.type,
-            })
-            consume(a.printed, 1)
-            consume(recipes.ITEMS.REDSTONE, 1)
-            consume(recipes.ITEMS.PRINTED_SILICON, 1)
-        end
+    if #jobs > 0 then
+        log.info("recipes", "Planned " .. #jobs .. " jobs")
     end
 
-    log.debug("recipes", "Planned " .. #jobs .. " jobs")
     return jobs
 end
 
