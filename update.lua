@@ -14,6 +14,10 @@ local files = {
     "lib/ui.lua",
     "install.lua",
     "update.lua",
+    "test-chest.lua",
+    "test-inscriber.lua",
+    "test-transfer.lua",
+    "test-recipes.lua",
 }
 
 print("AE2 Inscriber Crafter Updater")
