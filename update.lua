@@ -1,7 +1,7 @@
 -- AE2 Inscriber Crafter Updater
 -- Preserves your config.lua
 
-local baseUrl = "https://raw.githubusercontent.com/USERNAME/ae2-inscriber-crafter/main/"
+local baseUrl = "https://raw.githubusercontent.com/athompson-hoho/ae2-inscriber-crafta/main/"
 
 -- Note: config.lua is NOT in this list
 local files = {

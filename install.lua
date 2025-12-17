@@ -1,7 +1,7 @@
 -- AE2 Inscriber Crafter Installer
--- Run: wget run https://raw.githubusercontent.com/USERNAME/ae2-inscriber-crafter/main/install.lua
+-- Run: wget run https://raw.githubusercontent.com/athompson-hoho/ae2-inscriber-crafta/main/install.lua
 
-local baseUrl = "https://raw.githubusercontent.com/USERNAME/ae2-inscriber-crafter/main/"
+local baseUrl = "https://raw.githubusercontent.com/athompson-hoho/ae2-inscriber-crafta/main/"
 
 local files = {
     "startup.lua",
