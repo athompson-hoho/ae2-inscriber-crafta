@@ -32,6 +32,13 @@ end
 
 log.info("startup", "Found " .. #devices.inscribers .. " inscribers")
 
+-- Drain any leftover items from inscribers (recovery from reboot)
+log.info("startup", "Draining inscribers...")
+local drained = inventory.drainAllInscribers(devices.chest, devices.inscribers)
+if drained > 0 then
+    log.info("startup", "Recovered " .. drained .. " items from inscribers")
+end
+
 -- Shared state
 local systemState = {
     running = true,
@@ -84,6 +91,9 @@ while true do
     systemState.error = nil
     systemState.errorSource = nil
     jobs.clearQueue()
+
+    -- Drain inscribers before each run
+    inventory.drainAllInscribers(devices.chest, devices.inscribers)
 
     local ok, err = pcall(run)
 

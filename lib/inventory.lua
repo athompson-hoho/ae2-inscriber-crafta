@@ -58,4 +58,32 @@ function inventory.transferFromInscriber(chest, inscriber, fromSlot)
     return true
 end
 
+-- Drain all items from an inscriber back to chest
+function inventory.drainInscriber(chest, inscriber)
+    local drained = 0
+    local size = inscriber.peripheral.size()
+
+    for slot = 1, size do
+        local item = inscriber.peripheral.getItemDetail(slot)
+        if item then
+            local transferred = chest.pullItems(inscriber.name, slot, 64)
+            if transferred > 0 then
+                drained = drained + transferred
+                log.debug("inventory", "Drained " .. item.name .. " from " .. inscriber.name .. " slot " .. slot)
+            end
+        end
+    end
+
+    return drained
+end
+
+-- Drain all inscribers
+function inventory.drainAllInscribers(chest, inscribers)
+    local total = 0
+    for _, inscriber in ipairs(inscribers) do
+        total = total + inventory.drainInscriber(chest, inscriber)
+    end
+    return total
+end
+
 return inventory
