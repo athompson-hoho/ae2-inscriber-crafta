@@ -9,12 +9,12 @@ local config = require("config")
 -- Private job queue
 local _queue = {}
 
--- Inscriber slot constants
+-- Inscriber slot constants (verified for AE2)
 local SLOTS = {
-    TOP = 1,
-    MIDDLE = 2,
-    BOTTOM = 3,
-    OUTPUT = 4,
+    TOP = 1,      -- Press (top)
+    BOTTOM = 2,   -- Press (bottom) or printed silicon for assembly
+    MIDDLE = 3,   -- Material input (gold, certus, diamond, silicon, redstone)
+    OUTPUT = 4,   -- Result
 }
 
 -- Add job to queue
