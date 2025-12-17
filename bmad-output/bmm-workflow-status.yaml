@@ -1,0 +1,77 @@
+# BMad Method - Workflow Status Tracker
+# Generated: 2024-12-17
+# Track: BMad Method | Type: Greenfield
+
+project:
+  name: "ae2-inscriber-crafta"
+  track: "method"
+  field_type: "greenfield"
+  created: "2024-12-17"
+
+discovery:
+  brainstorm:
+    status: "pending"
+    agent: "analyst"
+    command: "/bmad:bmm:agents:analyst"
+    workflow: "brainstorming"
+    output: "bmad-output/brainstorm.md"
+
+  research:
+    status: "pending"
+    agent: "analyst"
+    command: "/bmad:bmm:agents:analyst"
+    workflow: "research"
+    output: "bmad-output/research.md"
+
+  product_brief:
+    status: "pending"
+    agent: "analyst"
+    command: "/bmad:bmm:agents:analyst"
+    workflow: "create-product-brief"
+    output: "bmad-output/product-brief.md"
+
+planning:
+  prd:
+    status: "pending"
+    agent: "pm"
+    command: "/bmad:bmm:agents:pm"
+    workflow: "prd"
+    output: "bmad-output/prd.md"
+    depends_on: ["product_brief"]
+
+  ux_design:
+    status: "pending"
+    agent: "ux-designer"
+    command: "/bmad:bmm:agents:ux-designer"
+    workflow: "create-ux-design"
+    output: "bmad-output/ux-design.md"
+    depends_on: ["prd"]
+
+  architecture:
+    status: "pending"
+    agent: "architect"
+    command: "/bmad:bmm:agents:architect"
+    workflow: "create-architecture"
+    output: "bmad-output/architecture.md"
+    depends_on: ["prd"]
+
+implementation:
+  epics:
+    status: "pending"
+    agent: "pm"
+    command: "/bmad:bmm:agents:pm"
+    workflow: "create-epics"
+    output: "bmad-output/epics/"
+    depends_on: ["architecture", "ux_design"]
+
+  development:
+    status: "pending"
+    agent: "dev"
+    command: "/bmad:bmm:agents:dev"
+    depends_on: ["epics"]
+
+next_step:
+  workflow: "brainstorm"
+  agent: "analyst"
+  command: "/bmad:bmm:agents:analyst"
+  description: "Start with creative exploration and ideation"

@@ -1,0 +1,15 @@
+# BMAD Core Configuration
+# Edit these values to customize your BMAD installation
+
+project_name: "ae2-inscriber-crafta"
+output_folder: "bmad-output"
+user_name: "Developer"
+communication_language: "English"
+
+# Installed modules
+modules:
+  - core
+  - bmb      # BMad Builder - Create custom agents and workflows
+  - bmgd     # BMad Game Dev - Game development agents
+  - bmm      # BMad Method - Full software development team
+  - cis      # Creative Innovation Suite - Brainstorming and creativity
