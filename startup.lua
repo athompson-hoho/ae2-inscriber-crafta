@@ -55,13 +55,18 @@ local stats = {
 -- Main loop function
 local function mainLoop()
     while systemState.running do
-        -- Scan chest and plan crafts
-        local contents = inventory.scanChest(devices.chest)
-        local newJobs = recipes.planCrafts(contents)
+        -- Only plan new jobs if queue is empty
+        if jobs.getQueueLength() == 0 then
+            local contents = inventory.scanChest(devices.chest)
+            local newJobs = recipes.planCrafts(contents)
 
-        -- Enqueue new jobs
-        for _, job in ipairs(newJobs) do
-            jobs.enqueue(job)
+            for _, job in ipairs(newJobs) do
+                jobs.enqueue(job)
+            end
+
+            if #newJobs > 0 then
+                log.info("main", "Planned " .. #newJobs .. " jobs")
+            end
         end
 
         -- Update UI
