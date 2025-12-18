@@ -23,17 +23,21 @@ end
 function peripherals.discover()
     local result = {
         inscribers = {},
-        chest = nil
+        chest = nil,
+        chestName = nil
     }
 
-    -- Find chest
+    -- Find chest (excluding inscribers which also have inventory)
     local allNames = peripheral.getNames()
     for _, name in ipairs(allNames) do
         local pType = peripheral.getType(name)
-        if pType and (pType:find("chest") or pType:find("inventory")) then
-            result.chest = peripheral.wrap(name)
-            log.info("peripherals", "Found chest: " .. name)
-            break
+        if pType and not pType:find("inscriber") then
+            if pType:find("chest") or pType:find("barrel") or pType == "inventory" then
+                result.chest = peripheral.wrap(name)
+                result.chestName = name
+                log.info("peripherals", "Found chest: " .. name .. " (" .. pType .. ")")
+                break
+            end
         end
     end
 
