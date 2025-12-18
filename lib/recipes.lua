@@ -28,7 +28,7 @@ recipes.ITEMS = {
     PRINTED_CALCULATION = "ae2:printed_calculation_processor",
     PRINTED_ENGINEERING = "ae2:printed_engineering_processor",
     PRINTED_SILICON = "ae2:printed_silicon",
-    PRINTED_CONCURRENT = "extendedae:printed_concurrent_processor",
+    PRINTED_CONCURRENT = "extendedae:concurrent_processor_print",
 
     -- Final processors
     LOGIC_PROCESSOR = "ae2:logic_processor",
@@ -179,7 +179,7 @@ function recipes.planCrafts(chestContents)
         local recipe = recipes.ALL[recipeName]
         local canMake = countCraftable(recipe, contents)
 
-        for i = 1, canMake do
+        for _ = 1, canMake do
             table.insert(jobs, {
                 recipe = recipe,
                 type = recipeName,
