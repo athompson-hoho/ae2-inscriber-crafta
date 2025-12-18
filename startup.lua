@@ -50,6 +50,7 @@ local stats = {
     logic = 0,
     calculation = 0,
     engineering = 0,
+    concurrent = 0,
 }
 
 -- Main loop function

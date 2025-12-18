@@ -127,6 +127,8 @@ function jobs.createWorker(inscriber, systemState, chest, stats)
                             stats.calculation = (stats.calculation or 0) + 1
                         elseif job.type == "assemble_engineering" then
                             stats.engineering = (stats.engineering or 0) + 1
+                        elseif job.type == "assemble_concurrent" then
+                            stats.concurrent = (stats.concurrent or 0) + 1
                         end
                     end
 

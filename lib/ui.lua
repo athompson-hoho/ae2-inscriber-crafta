@@ -47,10 +47,10 @@ function ui.render(systemState, inscribers, queueLength, stats)
     drawLine(12, "QUEUE: " .. queueLength .. " jobs pending")
 
     drawLine(14, "PRODUCTION:")
-    drawLine(15, string.format("  Logic: %d  Calc: %d  Eng: %d",
-        stats.logic or 0, stats.calculation or 0, stats.engineering or 0))
+    drawLine(15, string.format("  Logic: %d  Calc: %d  Eng: %d  Conc: %d",
+        stats.logic or 0, stats.calculation or 0, stats.engineering or 0, stats.concurrent or 0))
 
-    local total = (stats.logic or 0) + (stats.calculation or 0) + (stats.engineering or 0)
+    local total = (stats.logic or 0) + (stats.calculation or 0) + (stats.engineering or 0) + (stats.concurrent or 0)
     drawLine(16, string.format("  Total: %d processors", total))
 
     local status = systemState.running and "Running" or "PAUSED"
