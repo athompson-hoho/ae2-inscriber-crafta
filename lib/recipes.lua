@@ -10,6 +10,7 @@ recipes.PRESSES = {
     CALCULATION = "ae2:calculation_processor_press",
     ENGINEERING = "ae2:engineering_processor_press",
     SILICON = "ae2:silicon_press",
+    CONCURRENT = "extendedae:concurrent_processor_press",
 }
 
 -- Material and output item IDs
@@ -20,17 +21,20 @@ recipes.ITEMS = {
     DIAMOND = "minecraft:diamond",
     SILICON = "ae2:silicon",
     REDSTONE = "minecraft:redstone",
+    ENTRO_CRYSTAL = "extendedae:entro_crystal",
 
     -- Printed intermediates
     PRINTED_LOGIC = "ae2:printed_logic_processor",
     PRINTED_CALCULATION = "ae2:printed_calculation_processor",
     PRINTED_ENGINEERING = "ae2:printed_engineering_processor",
     PRINTED_SILICON = "ae2:printed_silicon",
+    PRINTED_CONCURRENT = "extendedae:printed_concurrent_processor",
 
     -- Final processors
     LOGIC_PROCESSOR = "ae2:logic_processor",
     CALCULATION_PROCESSOR = "ae2:calculation_processor",
     ENGINEERING_PROCESSOR = "ae2:engineering_processor",
+    CONCURRENT_PROCESSOR = "extendedae:concurrent_processor",
 }
 
 -- All recipe definitions
@@ -64,6 +68,13 @@ recipes.ALL = {
         bottom = nil,
         output = recipes.ITEMS.PRINTED_SILICON,
     },
+    print_concurrent = {
+        type = "print_concurrent",
+        top = { item = recipes.PRESSES.CONCURRENT, consume = false },
+        middle = { item = recipes.ITEMS.ENTRO_CRYSTAL, consume = true },
+        bottom = nil,
+        output = recipes.ITEMS.PRINTED_CONCURRENT,
+    },
 
     -- Assembly recipes (printed + redstone + printed silicon -> processor)
     assemble_logic = {
@@ -87,6 +98,13 @@ recipes.ALL = {
         bottom = { item = recipes.ITEMS.PRINTED_SILICON, consume = true },
         output = recipes.ITEMS.ENGINEERING_PROCESSOR,
     },
+    assemble_concurrent = {
+        type = "assemble_concurrent",
+        top = { item = recipes.ITEMS.PRINTED_CONCURRENT, consume = true },
+        middle = { item = recipes.ITEMS.REDSTONE, consume = true },
+        bottom = { item = recipes.ITEMS.PRINTED_SILICON, consume = true },
+        output = recipes.ITEMS.CONCURRENT_PROCESSOR,
+    },
 }
 
 -- Recipe priority order (print first, then assemble)
@@ -95,9 +113,11 @@ recipes.PRIORITY = {
     "print_logic",
     "print_calculation",
     "print_engineering",
+    "print_concurrent",
     "assemble_logic",
     "assemble_calculation",
     "assemble_engineering",
+    "assemble_concurrent",
 }
 
 -- Check how many of a recipe can be made with current contents
