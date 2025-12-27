@@ -50,13 +50,28 @@ function peripherals.discover()
     end
 
     -- Find inscribers (both ae2:inscriber and extendedae:ex_inscriber)
+    local skipped = 0
     for _, name in ipairs(allNames) do
         local pType = peripheral.getType(name)
         if pType and pType:find("inscriber") then
-            local wrapped, err = peripherals.wrapInscriber(name, pType)
-            if wrapped then
-                table.insert(result.inscribers, wrapped)
-                log.debug("peripherals", "Found inscriber: " .. name .. " (" .. wrapped.shortType .. ")")
+            -- Test if chest can reach this inscriber
+            local reachable = false
+            if result.chest then
+                local ok = pcall(function()
+                    result.chest.pushItems(name, 1, 0, 1)
+                end)
+                reachable = ok
+            end
+
+            if reachable then
+                local wrapped, err = peripherals.wrapInscriber(name, pType)
+                if wrapped then
+                    table.insert(result.inscribers, wrapped)
+                    log.debug("peripherals", "Found inscriber: " .. name .. " (" .. wrapped.shortType .. ")")
+                end
+            else
+                skipped = skipped + 1
+                log.debug("peripherals", "Skipped unreachable inscriber: " .. name)
             end
         end
     end
@@ -70,8 +85,8 @@ function peripherals.discover()
             ae2Count = ae2Count + 1
         end
     end
-    log.info("peripherals", string.format("Discovered %d inscribers (%d AE2, %d EX)",
-        #result.inscribers, ae2Count, exCount))
+    log.info("peripherals", string.format("Discovered %d inscribers (%d AE2, %d EX), skipped %d unreachable",
+        #result.inscribers, ae2Count, exCount, skipped))
     return result
 end
 
