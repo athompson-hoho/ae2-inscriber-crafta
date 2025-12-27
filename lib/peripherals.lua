@@ -50,34 +50,43 @@ function peripherals.discover()
     end
 
     -- Find inscribers (both ae2:inscriber and extendedae:ex_inscriber)
+    -- Determine if chest is on network (has : in name) to filter duplicates
+    local chestOnNetwork = result.chestName and result.chestName:find(":")
+    local directionalNames = {top=true, bottom=true, left=true, right=true, front=true, back=true}
+
     local skipped = 0
     for _, name in ipairs(allNames) do
         local pType = peripheral.getType(name)
         if pType and pType:find("inscriber") then
-            -- Test if chest can reach this inscriber by trying to pull 0 items
-            -- This will error if the target doesn't exist on the same network
-            local reachable = false
-            if result.chest then
-                local ok, err = pcall(function()
-                    -- Use getItemLimit which requires the target to exist
-                    return result.chest.pullItems(name, 1, 0)
-                end)
-                -- If pcall succeeded without error, it's reachable
-                reachable = ok
-                if not ok then
-                    log.debug("peripherals", "Connectivity test failed for " .. name .. ": " .. tostring(err))
-                end
-            end
-
-            if reachable then
-                local wrapped, err = peripherals.wrapInscriber(name, pType)
-                if wrapped then
-                    table.insert(result.inscribers, wrapped)
-                    log.debug("peripherals", "Found inscriber: " .. name .. " (" .. wrapped.shortType .. ")")
-                end
-            else
+            -- Skip directional names when chest is on network (they're duplicates)
+            local isDirectional = directionalNames[name]
+            if chestOnNetwork and isDirectional then
                 skipped = skipped + 1
-                log.debug("peripherals", "Skipped unreachable inscriber: " .. name)
+                log.debug("peripherals", "Skipped directional duplicate: " .. name)
+            else
+                -- Test if chest can reach this inscriber by trying to pull 0 items
+                -- This will error if the target doesn't exist on the same network
+                local reachable = false
+                if result.chest then
+                    local ok, err = pcall(function()
+                        return result.chest.pullItems(name, 1, 0)
+                    end)
+                    reachable = ok
+                    if not ok then
+                        log.debug("peripherals", "Connectivity test failed for " .. name .. ": " .. tostring(err))
+                    end
+                end
+
+                if reachable then
+                    local wrapped, err = peripherals.wrapInscriber(name, pType)
+                    if wrapped then
+                        table.insert(result.inscribers, wrapped)
+                        log.debug("peripherals", "Found inscriber: " .. name .. " (" .. wrapped.shortType .. ")")
+                    end
+                else
+                    skipped = skipped + 1
+                    log.debug("peripherals", "Skipped unreachable inscriber: " .. name)
+                end
             end
         end
     end
