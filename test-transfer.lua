@@ -1,11 +1,22 @@
 -- Test script: Auto-test all inscriber slots with press and material
 -- Usage: test-transfer [inscriber_name]
 
+-- Logging helper: prints to console and writes to debug.log
+local logFile = fs.open("debug.log", "w")
+local function log(msg)
+    print(msg)
+    if logFile then
+        logFile.writeLine(msg)
+        logFile.flush()
+    end
+end
+
 local args = {...}
 
 local chest = peripheral.find("inventory")
 if not chest then
-    print("ERROR: No chest found!")
+    log("ERROR: No chest found!")
+    if logFile then logFile.close() end
     return
 end
 
@@ -28,14 +39,15 @@ else
 end
 
 if not inscriber then
-    print("ERROR: No inscriber found!")
+    log("ERROR: No inscriber found!")
+    if logFile then logFile.close() end
     return
 end
 
-print("=== SLOT TRANSFER TEST ===")
-print("Inscriber: " .. insName)
-print("Slots: " .. inscriber.size())
-print("")
+log("=== SLOT TRANSFER TEST ===")
+log("Inscriber: " .. insName)
+log("Slots: " .. inscriber.size())
+log("")
 
 -- Find a press and a material in chest
 local pressSlot = nil
@@ -54,23 +66,23 @@ for slot, item in pairs(chest.list()) do
 end
 
 if not pressSlot then
-    print("WARNING: No press found in chest")
+    log("WARNING: No press found in chest")
 end
 if not materialSlot then
-    print("WARNING: No gold/ingot found in chest")
+    log("WARNING: No gold/ingot found in chest")
 end
 
-print("Press: " .. (pressName or "none") .. " (slot " .. (pressSlot or "?") .. ")")
-print("Material: " .. (materialName or "none") .. " (slot " .. (materialSlot or "?") .. ")")
-print("")
+log("Press: " .. (pressName or "none") .. " (slot " .. (pressSlot or "?") .. ")")
+log("Material: " .. (materialName or "none") .. " (slot " .. (materialSlot or "?") .. ")")
+log("")
 
 -- Test each slot
-print("=== TESTING PRESS TO EACH SLOT ===")
+log("=== TESTING PRESS TO EACH SLOT ===")
 if pressSlot then
     for slot = 1, inscriber.size() do
         local transferred = chest.pushItems(insName, pressSlot, 1, slot)
         local result = transferred > 0 and "OK" or "REJECTED"
-        print(string.format("  Slot %d: %s", slot, result))
+        log(string.format("  Slot %d: %s", slot, result))
 
         -- Pull it back if successful
         if transferred > 0 then
@@ -79,16 +91,16 @@ if pressSlot then
         sleep(0.1)
     end
 else
-    print("  (skipped - no press)")
+    log("  (skipped - no press)")
 end
 
-print("")
-print("=== TESTING MATERIAL TO EACH SLOT ===")
+log("")
+log("=== TESTING MATERIAL TO EACH SLOT ===")
 if materialSlot then
     for slot = 1, inscriber.size() do
         local transferred = chest.pushItems(insName, materialSlot, 1, slot)
         local result = transferred > 0 and "OK" or "REJECTED"
-        print(string.format("  Slot %d: %s", slot, result))
+        log(string.format("  Slot %d: %s", slot, result))
 
         -- Pull it back if successful
         if transferred > 0 then
@@ -97,9 +109,11 @@ if materialSlot then
         sleep(0.1)
     end
 else
-    print("  (skipped - no material)")
+    log("  (skipped - no material)")
 end
 
-print("")
-print("=== SLOT SUMMARY ===")
-print("Based on results above, update lib/recipes.lua SLOTS if needed")
+log("")
+log("=== SLOT SUMMARY ===")
+log("Based on results above, update lib/recipes.lua SLOTS if needed")
+
+if logFile then logFile.close() end

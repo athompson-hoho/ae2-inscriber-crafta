@@ -18,6 +18,8 @@ local files = {
     "test-inscriber.lua",
     "test-transfer.lua",
     "test-recipes.lua",
+    "test-network.lua",
+    "test-ex-inscriber.lua",
 }
 
 print("AE2 Inscriber Crafter Updater")

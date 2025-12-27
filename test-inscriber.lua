@@ -1,4 +1,15 @@
 -- Test script: List all inscribers and their slot contents
+
+-- Logging helper: prints to console and writes to debug.log
+local logFile = fs.open("debug.log", "w")
+local function log(msg)
+    print(msg)
+    if logFile then
+        logFile.writeLine(msg)
+        logFile.flush()
+    end
+end
+
 local inscribers = {}
 
 for _, name in ipairs(peripheral.getNames()) do
@@ -10,24 +21,27 @@ for _, name in ipairs(peripheral.getNames()) do
 end
 
 if #inscribers == 0 then
-    print("ERROR: No inscribers found!")
+    log("ERROR: No inscribers found!")
+    if logFile then logFile.close() end
     return
 end
 
-print("=== INSCRIBERS ===")
-print("")
+log("=== INSCRIBERS ===")
+log("")
 
 for i, ins in ipairs(inscribers) do
-    print("[" .. i .. "] " .. ins.shortType .. " - " .. ins.name .. " (" .. ins.pType .. ")")
-    print("    Size: " .. ins.p.size() .. " slots")
+    log("[" .. i .. "] " .. ins.shortType .. " - " .. ins.name .. " (" .. ins.pType .. ")")
+    log("    Size: " .. ins.p.size() .. " slots")
 
     for slot = 1, ins.p.size() do
         local item = ins.p.getItemDetail(slot)
         if item then
-            print(string.format("    Slot %d: %s x%d", slot, item.name, item.count))
+            log(string.format("    Slot %d: %s x%d", slot, item.name, item.count))
         else
-            print(string.format("    Slot %d: (empty)", slot))
+            log(string.format("    Slot %d: (empty)", slot))
         end
     end
-    print("")
+    log("")
 end
+
+if logFile then logFile.close() end

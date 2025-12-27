@@ -1,5 +1,15 @@
 -- Test script: Discover EX Inscriber API and slot structure
 
+-- Logging helper: prints to console and writes to debug.log
+local logFile = fs.open("debug.log", "w")
+local function log(msg)
+    print(msg)
+    if logFile then
+        logFile.writeLine(msg)
+        logFile.flush()
+    end
+end
+
 local inscriber = nil
 
 -- Find EX Inscriber
@@ -7,78 +17,81 @@ for _, name in ipairs(peripheral.getNames()) do
     local pType = peripheral.getType(name)
     if pType and pType:find("ex_inscriber") then
         inscriber = peripheral.wrap(name)
-        print("Found: " .. name .. " (" .. pType .. ")")
+        log("Found: " .. name .. " (" .. pType .. ")")
         break
     end
 end
 
 if not inscriber then
-    print("ERROR: No EX Inscriber found")
+    log("ERROR: No EX Inscriber found")
+    if logFile then logFile.close() end
     return
 end
 
-print("")
-print("=== EX INSCRIBER API ===")
-print("")
+log("")
+log("=== EX INSCRIBER API ===")
+log("")
 
 -- List all methods
-print("Available methods:")
+log("Available methods:")
 for key, value in pairs(inscriber) do
     if type(value) == "function" then
-        print("  - " .. key)
+        log("  - " .. key)
     end
 end
 
-print("")
-print("=== SLOT STRUCTURE ===")
-print("")
+log("")
+log("=== SLOT STRUCTURE ===")
+log("")
 
 -- Try to discover slot structure
 local ok, size = pcall(function() return inscriber.size() end)
 if ok then
-    print("Inscriber.size(): " .. size)
+    log("Inscriber.size(): " .. size)
 else
-    print("No size() method")
+    log("No size() method")
 end
 
-print("")
-print("Listing all slots with getItemDetail():")
+log("")
+log("Listing all slots with getItemDetail():")
 for slot = 1, 32 do
     local ok, item = pcall(function() return inscriber.getItemDetail(slot) end)
     if ok and item then
-        print(string.format("  Slot %2d: %s x%d", slot, item.name, item.count))
+        log(string.format("  Slot %2d: %s x%d", slot, item.name, item.count))
     end
 end
 
-print("")
-print("=== JOB SLOT INFO ===")
-print("")
+log("")
+log("=== JOB SLOT INFO ===")
+log("")
 
 -- Check if there's a job-specific API
 if inscriber.getActiveJob then
-    print("Has getActiveJob() method")
+    log("Has getActiveJob() method")
 end
 if inscriber.getJobs then
-    print("Has getJobs() method")
+    log("Has getJobs() method")
     local jobs = inscriber.getJobs()
     if jobs then
-        print("Current jobs: " .. #jobs)
+        log("Current jobs: " .. #jobs)
         for i, job in ipairs(jobs) do
-            print(string.format("  Job %d: %s", i, tostring(job)))
+            log(string.format("  Job %d: %s", i, tostring(job)))
         end
     end
 end
 if inscriber.getJobDetails then
-    print("Has getJobDetails() method")
+    log("Has getJobDetails() method")
 end
 
-print("")
-print("=== TRY PUSHING TO DIFFERENT SLOTS ===")
-print("")
-print("Attempting chest.pushItems with different slot numbers")
+log("")
+log("=== TRY PUSHING TO DIFFERENT SLOTS ===")
+log("")
+log("Attempting chest.pushItems with different slot numbers")
 local chest = peripheral.find("inventory")
 if chest then
-    print("Found chest, but not pushing (would consume items)")
+    log("Found chest, but not pushing (would consume items)")
 else
-    print("No chest found for test")
+    log("No chest found for test")
 end
+
+if logFile then logFile.close() end
