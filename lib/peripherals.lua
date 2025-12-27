@@ -5,10 +5,16 @@ local peripherals = {}
 local log = require("lib.log")
 
 -- Wrap an inscriber with metadata for state tracking
-function peripherals.wrapInscriber(name)
+function peripherals.wrapInscriber(name, pType)
     local raw = peripheral.wrap(name)
     if not raw then
         return nil, "peripheral not found: " .. name
+    end
+
+    -- Determine short type name for display
+    local shortType = "AE2"
+    if pType and pType:find("ex_inscriber") then
+        shortType = "EX"
     end
 
     return {
@@ -16,6 +22,8 @@ function peripherals.wrapInscriber(name)
         peripheral = raw,
         state = "IDLE",
         currentJob = nil,
+        type = pType,
+        shortType = shortType,
     }
 end
 
@@ -41,19 +49,29 @@ function peripherals.discover()
         end
     end
 
-    -- Find inscribers
+    -- Find inscribers (both ae2:inscriber and extendedae:ex_inscriber)
     for _, name in ipairs(allNames) do
         local pType = peripheral.getType(name)
         if pType and pType:find("inscriber") then
-            local wrapped, err = peripherals.wrapInscriber(name)
+            local wrapped, err = peripherals.wrapInscriber(name, pType)
             if wrapped then
                 table.insert(result.inscribers, wrapped)
-                log.debug("peripherals", "Found inscriber: " .. name)
+                log.debug("peripherals", "Found inscriber: " .. name .. " (" .. wrapped.shortType .. ")")
             end
         end
     end
 
-    log.info("peripherals", "Discovered " .. #result.inscribers .. " inscribers")
+    -- Count inscriber types
+    local ae2Count, exCount = 0, 0
+    for _, ins in ipairs(result.inscribers) do
+        if ins.shortType == "EX" then
+            exCount = exCount + 1
+        else
+            ae2Count = ae2Count + 1
+        end
+    end
+    log.info("peripherals", string.format("Discovered %d inscribers (%d AE2, %d EX)",
+        #result.inscribers, ae2Count, exCount))
     return result
 end
 

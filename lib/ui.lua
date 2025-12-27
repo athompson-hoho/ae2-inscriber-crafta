@@ -33,13 +33,23 @@ function ui.render(systemState, inscribers, queueLength, stats)
     centerText(2, "AE2 INSCRIBER CRAFTER v1.0")
     drawLine(3, string.rep("-", WIDTH))
 
-    drawLine(5, "INSCRIBERS: " .. #inscribers .. " connected")
+    -- Count inscriber types
+    local ae2Count, exCount = 0, 0
+    for _, ins in ipairs(inscribers) do
+        if ins.shortType == "EX" then
+            exCount = exCount + 1
+        else
+            ae2Count = ae2Count + 1
+        end
+    end
+    drawLine(5, string.format("INSCRIBERS: %d connected (%d AE2, %d EX)", #inscribers, ae2Count, exCount))
 
-    -- Show each inscriber state
+    -- Show each inscriber state with type
     local line = 6
     for i, ins in ipairs(inscribers) do
         local state = ins.state or "UNKNOWN"
-        drawLine(line, string.format("  [%d] %s", i, state))
+        local typeTag = ins.shortType or "AE2"
+        drawLine(line, string.format("  [%d] %-3s %s", i, typeTag, state))
         line = line + 1
         if line > 10 then break end
     end
