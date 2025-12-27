@@ -108,8 +108,22 @@ function jobs.createWorker(inscriber, systemState, chest, stats)
                     inscriber.state = "UNLOADING"
                     log.debug("jobs", inscriber.name .. " unloading")
 
-                    -- Extract output
-                    local success, transferErr = inventory.transferFromInscriber(chest, inscriber, SLOTS.OUTPUT)
+                    -- Extract output with retry if chest is full
+                    local maxRetries = 10
+                    local retryDelay = 1
+                    local success, transferErr
+                    for attempt = 1, maxRetries do
+                        success, transferErr = inventory.transferFromInscriber(chest, inscriber, SLOTS.OUTPUT)
+                        if success then
+                            break
+                        elseif transferErr == "chest full" then
+                            log.warn("jobs", inscriber.name .. " waiting for chest space (attempt " .. attempt .. "/" .. maxRetries .. ")")
+                            sleep(retryDelay)
+                        else
+                            -- Other error, don't retry
+                            break
+                        end
+                    end
                     if not success then
                         error("Failed to extract output: " .. (transferErr or "unknown"))
                     end

@@ -50,8 +50,16 @@ function inventory.transferFromInscriber(chest, inscriber, fromSlot)
     local transferred = chest.pullItems(inscriber.name, fromSlot, 64)
 
     if transferred == 0 then
-        log.debug("inventory", "Pull failed from inscriber slot " .. fromSlot)
-        return false, "transfer failed: chest full or slot empty"
+        -- Diagnose the issue
+        local item = inscriber.peripheral.getItemDetail(fromSlot)
+        if not item then
+            log.debug("inventory", "Pull failed: inscriber slot " .. fromSlot .. " is empty")
+            return false, "inscriber slot empty"
+        else
+            -- Slot has item, so chest must be full
+            log.warn("inventory", "Pull failed: chest is full (item: " .. item.name .. ")")
+            return false, "chest full"
+        end
     end
 
     log.debug("inventory", "Pulled " .. transferred .. " items from inscriber")
