@@ -60,9 +60,10 @@ function peripherals.discover()
         if pType and pType:find("inscriber") then
             -- Skip directional names when chest is on network (they're duplicates)
             local isDirectional = directionalNames[name]
+            log.debug("peripherals", "Checking: " .. name .. " directional=" .. tostring(isDirectional) .. " chestOnNetwork=" .. tostring(chestOnNetwork))
             if chestOnNetwork and isDirectional then
                 skipped = skipped + 1
-                log.debug("peripherals", "Skipped directional duplicate: " .. name)
+                log.info("peripherals", "Skipped directional duplicate: " .. name)
             else
                 -- Test if chest can reach this inscriber by trying to pull 0 items
                 -- This will error if the target doesn't exist on the same network
