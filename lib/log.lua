@@ -14,10 +14,34 @@ local LOG_LEVELS = {
 -- Current log level (default: INFO)
 local _currentLevel = LOG_LEVELS.INFO
 
+-- Debug log file handle
+local _logFile = nil
+
+-- Open the debug log file
+function log.openFile()
+    if _logFile then
+        _logFile.close()
+    end
+    _logFile = fs.open("debug.log", "w")
+end
+
+-- Close the debug log file
+function log.closeFile()
+    if _logFile then
+        _logFile.close()
+        _logFile = nil
+    end
+end
+
 -- Private logging helper
 local function _log(levelName, levelValue, source, message)
     if levelValue >= _currentLevel then
-        print(string.format("[%s] [%s] %s", levelName, source, message))
+        local line = string.format("[%s] [%s] %s", levelName, source, message)
+        print(line)
+        if _logFile then
+            _logFile.writeLine(line)
+            _logFile.flush()
+        end
     end
 end
 

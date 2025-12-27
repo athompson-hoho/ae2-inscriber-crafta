@@ -11,6 +11,7 @@ local ui = require("lib.ui")
 
 -- Initialize logging
 log.setLevel(config.logLevel)
+log.openFile()
 log.info("startup", "AE2 Inscriber Crafter starting...")
 
 -- Discover peripherals
