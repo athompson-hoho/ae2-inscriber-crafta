@@ -54,13 +54,19 @@ function peripherals.discover()
     for _, name in ipairs(allNames) do
         local pType = peripheral.getType(name)
         if pType and pType:find("inscriber") then
-            -- Test if chest can reach this inscriber
+            -- Test if chest can reach this inscriber by trying to pull 0 items
+            -- This will error if the target doesn't exist on the same network
             local reachable = false
             if result.chest then
-                local ok = pcall(function()
-                    result.chest.pushItems(name, 1, 0, 1)
+                local ok, err = pcall(function()
+                    -- Use getItemLimit which requires the target to exist
+                    return result.chest.pullItems(name, 1, 0)
                 end)
+                -- If pcall succeeded without error, it's reachable
                 reachable = ok
+                if not ok then
+                    log.debug("peripherals", "Connectivity test failed for " .. name .. ": " .. tostring(err))
+                end
             end
 
             if reachable then
